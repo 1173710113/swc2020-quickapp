@@ -1,0 +1,32 @@
+<import name="my-title" src="../Title"></import>
+<import name="my-input" src="../components/input/index"></import>
+ 
+ 
+<template>
+    <div class="register-page">
+        <my-title show-plus="false" show-search="false" text="注册"></my-title>
+        <my-input value="{{id-input}}" type="text" right="true" title="用户名" mode="wrapped" placeholder="请输入用户名" onchange="bindIdChange"></my-input>
+        <my-input value="{{password-first-input}}" type="password" right="true" title="密码" mode="wrapped" placeholder="请输入密码" onchange="bindIdChange"></my-input>
+        <my-input value="{{password-second-input}}" type="password" right="true" title="确认密码" mode="wrapped" placeholder="请再次输入密码" onchange="bindIdChange"></my-input>
+        <my-input value="{{name-input}}" type="text" right="true" title="姓名" mode="wrapped" placeholder="请输入姓名" onchange="bindNameChange"></my-input>
+        <select>
+          <option value="男" selected="true"></option>
+          <option value="女"></option>
+        </select>
+    </div>
+</template>
+
+<style lang="less">
+.register-page {
+  flex-direction: column;
+}
+
+</style>
+
+<script>
+export default {
+  private: {
+  },
+}
+</script>
+

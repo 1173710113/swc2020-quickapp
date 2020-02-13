@@ -1,0 +1,154 @@
+<import name="comp-title" src="../Title"></import>
+<template>
+  <div class="course_page">
+    <comp-title show-back="true" show-text="true" show-plus="true" show-search="true" text="课程页" onevt-add="routeAddCourse"></comp-title>
+    <div class="user_info">
+      <image src="/Common/Image/ic_launcher_round.png" width="120px" />
+      <text class="user_name">张三</text>
+    </div>
+    <div>
+      <list class="course_item">
+        <block for="list">
+          <list-item type="course" class="course" onclick="routeNode">
+            <div class="course_name">
+              <text>{{$item.name}}</text>
+            </div>
+            <div class="course_detail">
+              <div class="course_class">
+                <text>{{$item.teacherName}}</text>
+              </div>
+              <div class="course_student">
+                <text>{{$item.realVol}}人</text>
+              </div>
+            </div>
+          </list-item>
+        </block>
+      </list>
+    </div>
+  </div>
+</template>
+
+<style>
+.course_page {
+  background-color: #f5f5f5;
+  flex-direction: column;
+}
+
+.user_info {
+  background-color: #ffffff;
+  width: 100%;
+  padding: 10px;
+}
+
+.user_name {
+  margin-left: 20px;
+}
+
+.course_list {
+  flex: 1;
+  margin-top: 30px;
+  background-color: #ffffff;
+}
+
+.course_item {
+  flex-direction: column;
+  display: flex;
+  margin-top: 20px;
+}
+
+.course_filter {
+  border-color: #bbbbbb;
+  height: 50px;
+  border-bottom-width: 1px;
+  color: #bbbbbb;
+}
+
+.bar_text {
+  text-align: center;
+}
+
+.bar_text:active {
+  color: #2894ff;
+}
+.course {
+  flex-direction: column;
+  display: flex;
+  width: 100%;
+  background-color: #ffffff;
+  border-bottom-color: #bbbbbb;
+  border-bottom-width: 1px;
+}
+.course_name {
+  margin-top: 10px;
+}
+.course_name text {
+  font-size: 30px;
+  font-weight: bold;
+}
+.course_student {
+  margin-left: 350px;
+  margin-bottom: 10px;
+}
+.course_detail {
+  margin-top: 10px;
+}
+.course_class {
+  margin-left: 15px;
+}
+.course_detail text {
+  font-size: 20px;
+  color: #808080;
+}
+</style>
+
+<script>
+import $fetch from '@system.fetch'
+import prompt from '@system.prompt'
+import router from '@system.router'
+export default {
+  private: {
+    list: [],
+  },
+
+  routeAddCourse(evt) {
+    router.push({
+      uri: '/EnrollCourse'
+    })
+  },
+
+  getCourse() {
+    $fetch.fetch({
+      url: 'http://localhost:8082/sw2020/course/query/student',
+      responseType: 'json',
+      data: { 'id': '1173710113' },
+      method:'POST',
+    }).then(res => {
+      const result = res.data
+
+      console.info(`the status code of the response: ${result.code}`)
+      console.info(`the data of the response: ${result.data}`)
+      console.info(
+        `the headers of the response: ${JSON.stringify(result.headers)}`
+      )
+      this.list = result.data
+    }).catch(error => {
+      console.info(`handling fail, errMsg = ${error.data}`)
+      console.info(`handling fail, errCode = ${error.code}`)
+    })
+  },
+  onInit() {
+    console.info('触发')
+    this.getCourse()
+    console.info(`list:${this.list}`)
+  },
+  routeNode(){
+    router.push({
+      uri:'/Node'
+    })
+  }
+}
+</script>
+
+
+
+

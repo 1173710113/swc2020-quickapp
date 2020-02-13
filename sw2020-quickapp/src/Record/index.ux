@@ -1,0 +1,207 @@
+<import name="my-title" src="../Title"></import>
+<import name="my-icon" src="../components/icon/index"></import>
+ 
+ 
+<template>
+  <div class="record-page">
+
+    <my-title show-plus="false" show-search="false" text="录音"> </my-title>
+
+    <div class="content-block">
+      <div class="image-block">
+        <image class="mic" src="../pic/ic_mic_none_black_48dp.png"></image>
+      </div>
+      <div class="time-block">
+        <text>{{hour}}:</text>
+        <text>{{min}}:</text>
+        <text>{{s}}:</text>
+        <text>{{ms}}</text>
+      </div>
+      <div class="btn-block">
+        <div if="{{isStart}}" class="other-btn refresh-btn" onclick="clickRefresh">
+          <my-icon type="refresh" size="75"></my-icon>
+        </div>
+        <div onclick="clickStart" class="start-btn">
+          <div class="start-btn-icon" if="{{isPlay}}">
+            <my-icon type="pause" size="120"></my-icon>
+          </div>
+          <div class="start-btn-icon" else>
+            <my-icon type="play" size="120"></my-icon>
+          </div>
+        </div>
+        <div if="{{isStart}}" class="other-btn" onclick="clickStop">
+          <my-icon type="checkmark" size="75"></my-icon>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</template>
+
+<style>
+.record-page {
+  flex-direction: column;
+}
+.time-block {
+  flex-direction: row;
+  justify-content: center;
+  padding: 15px;
+  transform: translateY(220px);
+}
+.time-block text {
+  font-size: 100px;
+  font-weight: bold;
+  color: #000000;
+  animation-name: fadeIn;
+  animation-duration: 0.5s;
+  animation-fill-mode: forwards;
+  animation-timing-function: ease;
+}
+.content-block {
+  flex-direction: column;
+  padding: 15px;
+  position: fixed;
+  top: 100px;
+  bottom: 0px;
+}
+.image-block {
+  padding: 15px;
+  align-content: center;
+  justify-content: center;
+  transform: translateY(200px);
+}
+.start-btn {
+  height: 200px;
+  width: 200px;
+  border-radius: 200px;
+  padding: 15px;
+  background-color: #f0f8ff;
+  justify-content: center;
+  margin: 15px;
+  align-items: center;
+}
+.other-btn {
+  height: 150px;
+  width: 150px;
+  border-radius: 150px;
+  padding: 15px;
+  background-color: #f0f8ff;
+  justify-content: center;
+  margin: 15px;
+  animation-name: fadeIn;
+  animation-duration: 1s;
+  animation-fill-mode: forwards;
+  animation-timing-function: ease;
+}
+.mic {
+  height: 260px;
+  padding: 15px;
+  border-radius: 260px;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0; /*初始状态 透明度为0*/
+    transform: rotateX(180deg);
+  }
+  100% {
+    opacity: 1; /*结尾状态 透明度为1*/
+    transform: rotateX(0deg);
+  }
+}
+.start-btn-icon {
+  animation-name: fadeIn;
+  animation-duration: 0.3s;
+  animation-fill-mode: forwards;
+  animation-timing-function: ease;
+}
+
+.btn-block {
+  flex-direction: row;
+  padding: 15px;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(400px);
+}
+</style>
+
+<script>
+import record from '@system.record'
+
+export default {
+  protected: {
+    paramCourse: '',
+    course: null,
+    time: 0,
+    interval: 0,
+    preInterval: 0,
+    flag: null,
+    hour: '00',
+    min: '00',
+    s: '00',
+    ms: '00',
+    isPlay: false,
+    isStart: false,
+  },
+  onInit() {
+    this.course = JSON.parse(this.paramCourse)
+  },
+  clickStart() {
+    if (!this.isStart) {
+      this.isStart = true
+    }
+    if (!this.isPlay) {
+      this.isPlay = true
+      this.time = new Date().getTime()
+      this.start()
+      this.startRecord()
+      console.info(`start ${this.hour}:${this.min}:${this.s}:${this.ms}`)
+    } else {
+      this.isPlay = false
+      this.pause()
+    }
+
+  },
+  start() {
+    this.flag = setInterval(() => {
+      this.interval = new Date().getTime() - this.time + this.preInterval
+      let ms = this.interval % 1000 / 10
+      let s = this.interval % 60000 / 1000
+      let min = this.interval % 3600000 / 60000
+      let hour = this.interval / 3600000
+      this.ms = ms < 10 ? '0' + Math.floor(ms) : Math.floor(ms)
+      this.s = s < 10 ? '0' + Math.floor(s) : Math.floor(s)
+      this.min = min < 10 ? '0' + Math.floor(min) : Math.floor(min)
+      this.hour = hour < 10 ? '0' + Math.floor(hour) : Math.floor(hour)
+    }, 10)
+  },
+  pause() {
+    clearInterval(this.flag)
+    this.preInterval = this.interval
+    console.info(`end ${this.hour}:${this.min}:${this.s}:${this.ms}`)
+  },
+  clickRefresh() {
+
+  },
+  clickStop() {
+
+  },
+  startRecord() {
+    record.start({
+      duration: 10000,
+      sampleRate: 8000,
+      numberOfChannels: 1,
+      encodeBitRate: 16000,
+      format: 'aac',
+      success: function (data) {
+        console.info(`handling success: ${data.uri}`)
+      },
+      fail: function (data, code) {
+        console.info(`handling fail, code = ${code}`)
+      }
+    })
+  }
+}
+</script>
+
+

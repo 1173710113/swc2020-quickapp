@@ -1,0 +1,360 @@
+<import name="my-title" src="../Title"></import>
+<import name="my-menu" src="../Menu"></import>
+ 
+ 
+<template>
+  <div class="class-page">
+
+    <my-menu if="{{isShow}}" menu="{{menu}}"></my-menu>
+
+    <my-title text="{{course.name}}" onevt-add="routeAddRecord" onevt-menu="showMenu"> </my-title>
+
+    <list class="abstract" id="abstract-list" onscrollbottom="loadMore">
+      <block for="loadList">
+        <list-item type="abstract-calendar-item" class="abstract-item {{$idx == abstractIdx ? 'greenbox':''}}" onclick="scrollToMonth($idx)">
+          <list-item type="abstract-month" class="abstract-list">
+            <block for="{{monthList[$idx]}}">
+              <list-item type="abstract-day" class="abstract-list-item {{getAbstractMonthBGC($item.class, $item.day)}}">
+              </list-item>
+            </block>
+          </list-item>
+        </list-item>
+      </block>
+    </list>
+
+    <list class="calendar" id="calendar-list" onscrollbottom="loadMore">
+      <block for="loadList">
+        <list-item type="calendar-item" class="calendar-item">
+          <list-item type="month-title" class="calendar-item-title">
+            <text>{{$item.year}}年{{$item.month}}日</text>
+          </list-item>
+          <list-item type="month-week" class="body-list">
+            <text class="darkgrey">周日</text>
+            <text class="darkgrey">周一</text>
+            <text class="darkgrey">周二</text>
+            <text class="darkgrey">周三</text>
+            <text class="darkgrey">周四</text>
+            <text class="darkgrey">周五</text>
+            <text class="darkgrey">周六</text>
+          </list-item>
+          <list-item type="month-day" class="body-list">
+            <block for="{{monthList[$idx]}}">
+              <list-item type="month-day" class="list-item">
+                <text show="{{$item.class}}" class="green" onclick="routeNode($item.idx)">{{$item.day}}</text>
+                <text show="{{!$item.class}}" class="darkgrey">{{$item.day}}</text>
+              </list-item>
+            </block>
+          </list-item>
+        </list-item>
+      </block>
+    </list>
+  </div>
+</template>
+
+<style lang="less">
+@abstract-calendar-day: 25px;
+@abstract-calendar-day-margin: 4px;
+@abstract-calendar-month-padding: 10px;
+@abstract-calendar-month-selected-border: 5px;
+
+.class-page {
+  flex-direction: column;
+}
+
+.calendar {
+  flex-direction: column;
+}
+.calendar-item {
+  flex-direction: column;
+  padding: 8px;
+  margin: 10px;
+  border: 1px solid #bdbdbd;
+}
+.abstract-item {
+  flex-direction: column;
+  width: (@abstract-calendar-day+2* @abstract-calendar-day-margin) * 7 + 2 *
+    @abstract-calendar-month-padding + 2 *
+    @abstract-calendar-month-selected-border;
+  padding: @abstract-calendar-month-padding;
+  margin: 5px;
+}
+.calendar-item-title {
+  padding: 15px;
+  justify-content: center;
+}
+.calendar-item-title text {
+  font-weight: bold;
+  font-size: 40px;
+}
+.body-list {
+  justify-content: space-around;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.abstract-list {
+  justify-content: space-around;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.list-item {
+  height: 85px;
+  width: 100px;
+  justify-content: center;
+  align-content: center;
+  flex-direction: column;
+  align-items: center;
+  align-content: center;
+}
+
+.abstract-list-item {
+  height: @abstract-calendar-day;
+  width: @abstract-calendar-day;
+  margin: @abstract-calendar-day-margin;
+  border-radius: @abstract-calendar-day;
+  justify-content: center;
+  align-content: center;
+  flex-grow: 1;
+  flex-direction: column;
+  align-items: center;
+  align-content: center;
+}
+.backgroud-darkgrey {
+  background-color: #b3e5fc;
+}
+.backgroud-green {
+  background-color: #ffffff;
+}
+.lightgrey {
+  color: #a8a8a8; /*浅灰色*/
+}
+.darkgrey {
+  color: #757575; /*深灰色*/
+  font-weight: bold;
+  font-size: 25px;
+}
+.green {
+  color: #448aff; /*绿色*/
+  font-weight: bold;
+  font-size: 25px;
+}
+.greenbox {
+  border: @abstract-calendar-month-selected-border solid #ffffff;
+}
+.abstract {
+  flex-direction: row;
+  height: 6 * (@abstract-calendar-day + 2 * @abstract-calendar-day-margin) + 2 *
+    (
+      @abstract-calendar-month-padding+ @abstract-calendar-month-selected-border +
+        10
+    );
+  background-color: #03a9f4;
+}
+</style>
+
+
+<script>
+import router from '@system.router'
+import fetch from '@system.fetch'
+
+export default {
+  protected: {
+    paramCourse: '',
+    course: null,
+    list: [],
+    leapYear: [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+    notLeapYear: [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+    timeList: [],
+    abstractIdx: 0,
+    monthList: [],
+    loadList: [],
+    size: 3,
+    hasMoreData: true,
+    isShow: false,
+    menu: false,
+  },
+  onInit() {
+    this.course = JSON.parse(this.paramCourse)
+    console.info(`param course：` + JSON.stringify(this.course))
+    this.getClass(this.course.id)
+  },
+  routeAddRecord() {
+    router.push({
+      uri: '/Record',
+      params: {
+        paramCourse: JSON.stringify(this.course)
+      }
+    })
+  },
+  routeNode(idx) {
+    console.info(`click ${idx}`)
+    var courseClass = this.list[idx]
+    router.push({
+      uri: '/Node',
+      params: {
+        paramCourseClass: JSON.stringify(courseClass)
+      }
+    })
+  },
+  getClass(courseId) {
+    fetch.fetch({
+      url: 'http://localhost:8082/sw2020/class/query',
+      data: { 'courseId': courseId },
+      method: 'POST',
+      responseType: 'json'
+    }).then(res => {
+      const result = res.data
+
+      console.info(`the status code of the response: ${result.code}`)
+      console.info(`the data of the response: ${JSON.stringify(result.data)}`)
+      console.info(
+        `the headers of the response: ${JSON.stringify(result.headers)}`
+      )
+      if (result.data.flag) {
+        this.list = result.data.result
+        this.getTimeList()
+        this.loadMore()
+      }
+    }).catch(error => {
+      console.info(`handling fail, errMsg = ${error.data}`)
+      console.info(`handling fail, errCode = ${error.code}`)
+    })
+  },
+
+  isLeapYear(year) {
+    if (((year % 4) == 0) && ((year % 100) != 0) || ((year % 400) == 0)) {
+      return (true)
+    } else {
+      return (false)
+    }
+  },
+  getFullDayOfMonth(year, month) {
+    let isLeap = this.isLeapYear(year)
+    if (isLeap) {
+      return this.leapYear[month - 1]
+    } else {
+      return this.notLeapYear[month - 1]
+    }
+  },
+  getStartEmpty(year, month) {
+    const day = new Date(year, month - 1, 1).getDay()
+    let empty = []
+    if (day > 0) {
+      for (let i = 0; i < day; i++) {
+        empty.push({ 'day': null, 'class': false, 'idx': null })
+      }
+    }
+    return empty
+  },
+
+  getEndEmpty(year, month) {
+    let fullDay = this.getFullDayOfMonth(year, month)
+    const day = new Date(year, month - 1, fullDay).getDay()
+    let empty = []
+    if (day < 6) {
+      for (let i = 6; i > day; i--) {
+        empty.push({ 'day': null, 'class': false, 'idx': null })
+      }
+    }
+    return empty
+  },
+  getMonthDayList(year, month) {
+    console.info(`count day list of ` + year + ` ` + month)
+    const fullDay = this.getFullDayOfMonth(year, month)
+    const startEmpty = this.getStartEmpty(year, month)
+    let endEmpty = this.getEndEmpty(year, month)
+    for (let i = 0; i < fullDay; i++) {
+      let flag = false
+      let idx = null
+      for (let j = 0; j < this.list.length; j++) {
+        if ((this.list[j].year == year) && (this.list[j].month == month) && (this.list[j].day == (i + 1))) {
+          flag = true
+          idx = j
+          break
+        }
+      }
+      startEmpty.push({ 'day': i + 1, 'class': flag, 'idx': idx })
+    }
+    for (let i = 0, len = endEmpty.length; i < len; i++) {
+      startEmpty.push(endEmpty[i])
+    }
+    return startEmpty
+  },
+  getTimeList() {
+    let startYear = 10000
+    let startMonth = 12
+    let endYear = 0
+    let endMonth = 1
+    for (let i = 0; i < this.list.length; i++) {
+      if (this.list[i].year < startYear) {
+        startYear = this.list[i].year
+        startMonth = this.list[i].month
+      } else if (this.list[i].year == startYear) {
+        if (this.list[i].month < startMonth) {
+          startMonth = this.list[i].month
+        }
+      }
+      if (this.list[i].year > endYear) {
+        endYear = this.list[i].year
+        endMonth = this.list[i].month
+      } else if (this.list[i].year == endYear) {
+        if (this.list[i].month > endMonth) {
+          endMonth = this.list[i].month
+        }
+      }
+    }
+    if (startYear == endYear) {
+      for (let i = startMonth; i <= endMonth; i++) {
+        this.timeList.push({ 'year': startYear, 'month': i })
+      }
+    } else {
+      for (let i = startYear; i <= endYear; i++) {
+        if (i == startYear) {
+          for (let j = startMonth; j <= 12; j++) {
+            this.timeList.push({ 'year': i, 'month': j })
+          }
+        } else if (i == endYear) {
+          for (let j = 1; j <= endMonth; j++) {
+            this.timeList({ 'year': i, 'month': j })
+          }
+        } else {
+          for (let j = 1; j <= 12; j++) {
+            this.timeList({ 'year': i, 'month': j })
+          }
+        }
+      }
+    }
+  },
+  getAbstractMonthBGC(flag, day) {
+    if (day == null) {
+      return ''
+    }
+    return flag ? 'backgroud-green' : 'backgroud-darkgrey'
+  },
+  scrollToMonth(idx) {
+    this.abstractIdx = idx
+    this.$element('calendar-list').scrollTo({ index: idx, smooth: true })
+    this.$element('abstract-list').scrollTo({ index: idx, smooth: true })
+  },
+  loadMore() {
+    console.info(`load more ${this.timeList.length}`)
+    if (this.timeList.length > 0) {
+      let list = null
+      if (this.timeList.length < 3) {
+        list = this.timeList.splice(0, this.timeList.length)
+      } else {
+        list = this.timeList.splice(0, this.size)
+      }
+      this.loadList = this.loadList.concat(list)
+      for (let i = 0, len = list.length; i < len; i++) {
+        this.monthList.push(this.getMonthDayList(list[i].year, list[i].month))
+      }
+    }
+  },
+  showMenu() {
+    console.info(`show menu`)
+    this.isShow = true
+    this.menu = !this.menu
+  },
+}
+</script>
+

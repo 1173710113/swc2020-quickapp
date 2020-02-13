@@ -1,0 +1,151 @@
+<import name="comp-title" src="../Title"></import>
+ 
+<template>
+    <div class="add_course_page">
+        <comp-title show-back="true" show-text="true" show-plus="false" show-search="false" text="添加课程页"></comp-title>
+        <text class="guide-text">课程名:</text>
+        <input type="text" class="input-text" placeholder="请输入课程名" value="{{courseName}}" onchange="bindNameChange"></input>
+        <text class="guide-text">最大选课人数:</text>
+        <input type="number" class="input-text" placeholder="请设置最大选课人数" value="{{courseVol}}" onchange="bindVolChange"></input>
+        <text class="guide-text">上课地点:</text>
+        <input type="text" class="input-text" placeholder="请输入上课地点" value="{{courseDest}}" onchange="bindDestChange"></input>
+        <text class="guide-text">开课时间:</text>
+        <div class="time-text">
+            <input type="date" class="input-text" value="{{courseStartDate}}" onchange="bindStartDateChange"></input>
+            <input type="time" class="input-text" value="{{courseStartTime}}" onchange="bindStartTimeChange"></input>
+        </div>
+        <text class="guide-text">结课时间:</text>
+        <div class="time-text">
+            <input type="date" class="input-text" value="{{courseEndDate}}" onchange="bindEndDateChange"></input>
+            <input type="time" class="input-text" value="{{courseEndTime}}" onchange="bindEndTimeChange"></input>
+        </div>
+        <input type="button" value="提交" class="button-submit color-1" onclick="addCourse"></input>
+    </div>
+</template>
+<script>
+import prompt from '@system.prompt'
+import fetch from '@system.fetch'
+
+export default {
+    addCourse() {
+        let course = {
+            id: '',
+            name: this.courseName,
+            teacherId: '01',
+            teacherName: '',
+            maxVol: Number(this.courseVol),
+            destination: this.courseDest,
+            startTime: this.courseStartDate,
+            endTime: this.courseEndDate,
+            realVol: 0
+        }
+        console.info(`create course: ${JSON.stringify(course)}`)
+        fetch.fetch({
+            url: 'http://localhost:8082/sw2020/course/add',
+            responseType: 'json',
+            data: JSON.stringify(course),
+            header: { 'Content-Type': 'application/json;charset=utf-8' },
+            method: 'POST'
+        })
+            .then(res => {
+                const result = res.data
+                console.info(`the status code of the response: ${result.code}`)
+                console.info(`the data of the response: ${result.data}`)
+                console.info(
+                    `the headers of the response: ${JSON.stringify(result.headers)}`
+                )
+            })
+            .catch(error => {
+                console.info(`handling fail, errMsg = ${error.data}`)
+                console.info(`handling fail, errCode = ${error.code}`)
+            })
+    },
+    bindNameChange(e) {
+        this.courseName = e.value
+    },
+    bindVolChange(e) {
+        this.courseVol = e.value
+    },
+    bindDestChange(e) {
+        this.courseDest = e.value
+    },
+    bindStartDateChange(e) {
+        this.courseStartDate = e.value
+    },
+    bindStartTimeChange(e) {
+        this.courseStartTime = e.value
+    },
+    bindEndDateChange(e) {
+        this.courseEndDate = e.value
+    },
+    bindEndTimeChange(e) {
+        this.courseEndTime = e.value
+    }
+}
+</script>
+
+<style>
+.add_course_page {
+  flex-direction: column;
+}
+.input-text {
+  height: 80px;
+  line-height: 80px;
+  padding-left: 30px;
+  padding-right: 30px;
+  margin-left: 30px;
+  margin-right: 30px;
+  border-top-width: 1px;
+  border-bottom-width: 1px;
+  border-color: #999999;
+  font-size: 30px;
+  background-color: #ffffff;
+}
+.guide-text {
+  height: 80px;
+  line-height: 80px;
+  padding-left: 30px;
+  padding-right: 30px;
+  margin-left: 30px;
+  margin-right: 30px;
+  border-top-width: 1px;
+  border-bottom-width: 1px;
+  border-color: #999999;
+  font-size: 30px;
+  background-color: #ffffff;
+}
+.time-text {
+  flex-direction: row;
+  height: 80px;
+  line-height: 80px;
+  padding-left: 30px;
+  padding-right: 30px;
+  margin-left: 30px;
+  margin-right: 30px;
+  border-top-width: 1px;
+  border-bottom-width: 1px;
+  border-color: #999999;
+  font-size: 30px;
+  background-color: #ffffff;
+}
+.button-submit {
+  padding-top: 10px;
+  padding-right: 30px;
+  padding-bottom: 10px;
+  padding-left: 30px;
+  margin-left: 30px;
+  margin-right: 30px;
+  margin-top: 30px;
+  font-size: 30px;
+  color: #ffffff;
+}
+.color-1 {
+  background-color: #09ba07;
+}
+.color-1:active {
+  background-color: #098807;
+}
+</style>
+
+
+

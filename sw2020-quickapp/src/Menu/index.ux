@@ -1,0 +1,187 @@
+<template>
+    <div class="{{menu? 'menu':'menu-dispear'}}">
+
+        <div class="{{menu? 'content':'content-dispear'}}">
+            <div class="user">
+                <div class="user-image">
+                    <image src="../Common/Image/ic_launcher_round.png"></image>
+                </div>
+
+                <div class="user-name">
+                    <text>张三</text>
+                </div>
+                <div class="user-id">
+                    <text>1173710113<text>
+                </div>
+            </div>
+
+            <div class="function">
+                <div class="function-item">
+                    <text>用户</text>
+                </div>
+                <div class="function-item">
+                    <text>用户</text>
+                </div>
+                <div class="function-item">
+                    <text>用户</text>
+                </div>
+                <div class="function-item">
+                    <text>用户</text>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</template>
+
+<style lang="less">
+.content {
+  flex-direction: column;
+  animation-name: fadeIn;
+  animation-duration: 0.6s;
+  animation-fill-mode: forwards;
+  animation-timing-function: ease;
+  &-dispear {
+    flex-direction: column;
+    animation-name: fadeOut;
+    animation-duration: 0.3s;
+    animation-fill-mode: forwards;
+    animation-timing-function: ease;
+  }
+}
+.user {
+  flex-direction: column;
+  background-color: #03a9f4;
+  padding:15px;
+  &-image {
+    justify-content: center;
+    margin-top: 125px;
+  }
+  &-name {
+    justify-content: center;
+    margin-top: 15px;
+
+    text {
+      font-size: 50px;
+      font-weight: bold;
+      color: #ffffff;
+      lines: 1;
+    }
+  }
+
+  &-id {
+    justify-content: center;
+    text {
+      font-size: 40px;
+      lines: 1;
+      color: #b3e5fc;
+    }
+  }
+}
+
+.function {
+  flex-direction: column;
+  margin-top: 100px;
+  border-top: 1px solid #BDBDBD;
+
+  &-item {
+    padding: 15px;
+    justify-content: center;
+    border-bottom: 1px solid #BDBDBD;
+    text {
+      color: #000000;
+      font-size: 40px;
+      lines: 1;
+      text-align: center;
+    }
+  }
+}
+
+.menu {
+  flex-direction: column;
+  position: fixed;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 200px;
+  background-color: #ffffff;
+  animation-name: showMenu;
+  animation-duration: 0.6s;
+  animation-fill-mode: forwards;
+  animation-timing-function: ease;
+}
+
+@keyframes showMenu {
+  0% {
+    left: 0px;
+    right: 750px;
+    background-color: #2196F3;
+  }
+  100% {
+    left: 0px;
+    right: 200px;
+    background-color: #ffffff;
+  }
+}
+
+.menu-dispear {
+  flex-direction: column;
+  position: fixed;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 750px;
+  background-color: #2196F3;
+  animation-name: closeMenu;
+  animation-duration: 0.6s;
+  animation-fill-mode: forwards;
+  animation-timing-function: ease;
+}
+
+@keyframes closeMenu {
+  0% {
+    right: 200px;
+    background-color: #ffffff;
+  }
+  25%{
+      background-color: white;
+  }
+  100% {
+    right: 750px;
+    background-color: #2196F3;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  25%{
+      opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+</style>
+
+<script>
+export default {
+  props: ['menu'],
+}
+</script>
+
+

@@ -1,0 +1,136 @@
+<import name="comp-title" src="../Title">
+</import>
+<import name="my-menu" src="../Menu"></import>
+ 
+ 
+<template>
+  <div class="course_page">
+    
+    <my-menu if="{{isShow}}" menu="{{menu}}"></my-menu>
+
+    <comp-title show-back="true" show-text="true" show-plus="true" show-search="true" text="课程页" onevt-add="routeAddCourse" onevt-menu="showMenu"></comp-title>
+
+    <list class="course_item" onscrollbottom="loadMore">
+      <list-item type="course" class="course" for="{{list}}" onclick="routeClass($idx)">
+        <div class="course_name">
+          <text>{{$item.name}}</text>
+        </div>
+        <div class="course_detail">
+          <div class="course_class">
+            <text>2017秋软件工程</text>
+          </div>
+          <div class="course_student">
+            <text>{{$item.realVol}}人</text>
+          </div>
+        </div>
+      </list-item>
+    </list>
+
+  </div>
+</template>
+
+<script>
+import $fetch from '@system.fetch'
+import prompt from '@system.prompt'
+import router from '@system.router'
+export default {
+  private: {
+    list: [],
+    title: 'Course',
+    isShow:false,
+    menu:false,
+  },
+
+  routeAddCourse(evt) {
+    router.push({
+      uri: '/AddCourse'
+    })
+
+  },
+
+  getCourse() {
+    $fetch.fetch({
+      url: 'http://localhost:8082/sw2020/course/query/teacher',
+      responseType: 'json',
+      data: { 'id': '01' },
+      method: 'POST',
+    }).then(res => {
+      const result = res.data
+
+      console.info(`the status code of the response: ${result.code}`)
+      console.info(`the data of the response: ${JSON.stringify(result.data)}`)
+      console.info(
+        `the headers of the response: ${JSON.stringify(result.headers)}`
+      )
+      this.list = result.data
+    }).catch(error => {
+      console.info(`handling fail, errMsg = ${error.data}`)
+      console.info(`handling fail, errCode = ${error.code}`)
+    })
+  },
+  onInit() {
+    console.info('触发')
+    this.getCourse()
+    console.info(`list:${this.list}`)
+  },
+  routeClass(idx) {
+    var course = this.list[idx]
+    console.info(`click course:` + JSON.stringify(course))
+    router.push({
+      uri: '/Class',
+      params: {
+        paramCourse: JSON.stringify(course)
+      }
+    })
+  },
+  loadMore() {
+    console.info(`loadmore`)
+  },
+  showMenu(){
+    console.info(`show menu`)
+    this.isShow= true
+    this.menu = !this.menu
+  }
+}
+</script>
+
+<style lang="less">
+.course_page {
+  flex-direction: column;
+}
+
+.course_item {
+  flex-direction: column;
+}
+
+.course {
+  flex-direction: column;
+  padding: 10px;
+  margin: 10px;
+  border: 1px solid #d0d0d0;
+  border-radius: 5px;
+}
+.course_name {
+  margin-top: 10px;
+}
+.course_name text {
+  font-size: 30px;
+  font-weight: bold;
+}
+.course_student {
+  margin-left: 350px;
+  margin-bottom: 10px;
+}
+.course_detail {
+  margin-top: 10px;
+  justify-content: space-between;
+}
+.course_class {
+  margin-left: 15px;
+}
+.course_detail text {
+  font-size: 20px;
+  color: #808080;
+}
+</style>
+

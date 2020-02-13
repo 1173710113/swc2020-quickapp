@@ -1,0 +1,155 @@
+<import name="my-input" src="../components/input/index"></import>
+<import name="my-button" src="../components/button/index"></import>
+<import name="my-radio" src="../components/radio/index"></import>
+ 
+<template>
+  <!-- template里只能有一个根节点 -->
+  <div class="demo-page">
+    <my-input value="{{idInput}}" type="text" right="true" title="账号" mode="wrapped" placeholder="请输入账号" onchange="bindIdChange"></my-input>
+    <my-input value="{{passwordInput}}" type="password" right="true" title="密码" mode="wrapped" placeholder="请输入密码" onchange="bindPasswordChange"></my-input>
+    <div class="login-option">
+      <my-radio value="记住密码" shape="square" checked="{{rememberIsChecked}}" onchange="RememberChange"></my-radio>
+      <my-radio value="自动登入" shape="square" checked="{{autoIsChecked}}" onchange="AutoChange"></my-radio>
+      <text class="function-text" onclick="routeRegister">忘记密码</text>
+    </div>
+    <my-button type="primary" onclick="login" size="small">登入</my-button>
+  </div>
+</template>
+
+<script>
+import router from '@system.router'
+import fetch from '@system.fetch'
+import prompt from '@system.prompt'
+import storage from '@system.storage'
+
+export default {
+  // 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
+  private: {
+    rememberIsChecked: false,
+    autoIsChecked: false
+  },
+  onInit() {
+    var loginInfo = {'remember': true,'auto': false }
+    console.info(JSON.stringify(loginInfo))
+    storage.get({
+      key: 'loginInfo',
+      default: JSON.stringify(loginInfo),
+      success: function (data) {
+        console.info(`get loginInfo success:` + data)
+        var loginInfoGet = JSON.parse(data)
+        console.info(`get loginInfo success, remember:${loginInfoGet.remember}, auto:${loginInfoGet.auto}`)
+        this.rememberIsChecked = loginInfoGet.remember
+        this.autoIsChecked = loginInfoGet.auto
+      },
+      fail: function (data, code) {
+        console.info(`get loginInfo fail data:${{ data }}, code:${{ code }}`)
+      }
+    })
+  },
+  login() {
+    console.info(`id:${this.idInput}`)
+    console.info(`pass:${this.passwordInput}`)
+    fetch.fetch({
+      url: 'http://localhost:8082/sw2020/user/login',
+      responseType: 'json',
+      data: { 'id': this.idInput, 'password': this.passwordInput }
+    })
+      .then(res => {
+        const result = res.data
+        console.info(`the status code of the response: ${result.code}`)
+        console.info(`the data of the response: ${JSON.stringify(result.data.result)}`)
+        console.info(
+          `the headers of the response: ${JSON.stringify(result.headers)}`
+        )
+        this.rememberUser()
+        if (result.data.flag) {
+          console.info(`login success:${result.data.result.type}`)
+          // 跳转到应用内的某个页面，router用法详见：文档->接口->页面路由
+          if (result.data.result.type == '学生') {
+            router.push({
+              uri: '/StudentMain'
+            })
+          } else if (result.data.result.type == '教师') {
+            router.push({
+              uri: '/TeacherMain'
+            })
+          }
+
+        } else {
+          prompt.showToast({
+            message: result.data.msg
+          })
+        }
+
+      })
+      .catch(error => {
+        console.info(`handling fail, errMsg = ${error.data}`)
+        console.info(`handling fail, errCode = ${error.code}`)
+        console.warn(`login failed`)
+        //弹窗提示登入失败
+        prompt.showToast({
+          message: 'login failed'
+        })
+      })
+  },
+  bindIdChange(evt) {
+    this.idInput = evt.detail.value
+    console.info(this.inInput)
+  },
+  bindPasswordChange(evt) {
+    this.passwordInput = evt.detail.value
+  },
+  RememberChange() {
+    this.rememberIsChecked = !this.rememberIsChecked
+    console.info(`isRemember:` + this.rememberIsChecked)
+    if (!this.rememberIsChecked) {
+      if (this.autoIsChecked) {
+        this.autoIsChecked = false
+      }
+    }
+  },
+  AutoChange() {
+    this.autoIsChecked = !this.autoIsChecked
+    console.info(`isAuto:` + this.autoIsChecked)
+    if (this.autoIsChecked) {
+      this.rememberIsChecked = true
+    } else {
+      this.rememberIsChecked = false
+    }
+  },
+  rememberUser() {
+    var user = { 'id': null, 'password': null }
+    if (this.autoIsChecked) {
+      user.id = this.idInput
+      user.password = this.passwordInput
+    } else if (this.rememberIsChecked) {
+      user.id = this.idInput
+      user.password = this.passwordInput
+    }
+    console.info(`login option:` + JSON.stringify(user))
+  },
+  routeRegister(){
+    router.push({
+      uri:'/Register'
+    })
+  }
+}
+
+</script>
+
+<style>
+.demo-page {
+  flex-direction: column;
+  justify-content: flex-start;
+  margin-top: 250px;
+  margin-left: 50px;
+  margin-right: 50px;
+}
+.login-option {
+  justify-content: space-between;
+  padding: 20px;
+}
+.function-text:active {
+  color: #2d8cf0;
+}
+</style>

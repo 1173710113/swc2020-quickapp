@@ -1,0 +1,181 @@
+<import name="comp-title" src="../Title"></import>
+<import name="my-accordion" src="../components/accordion/index"></import>
+<import name="my-accordion-group" src="../components/accordion-group/index"></import>
+<import name="my-icon" src="../components/icon/index"></import>
+ 
+ 
+ 
+ 
+<template>
+  <div class="node-page">
+    <comp-title show-plus="false" show-search="false" text="知识图谱"></comp-title>
+    <div class="node-list" id="nodeBox">
+      <block for="nodeList">
+        <div class="node-item">
+          <div class="node-item-hd" onlongpress="clickLeft($idx)" onclick="clickRight($idx)">
+            <text class="node-item-content">{{$item.content}}</text>
+          </div>
+          <div if="{{clicked && (current == $idx)}}">
+            <div class="node-item-bd" if="{{left && $item.sentence.length > 0}}">
+              <block for="{{$item.sentence}}">
+                <div class="node-item-record">
+                  <text>{{$item.content}}</text>
+                </div>
+              </block>
+            </div>
+            <div class="node-item-bd" if="{{!left && $item.relation.length > 0}}">
+              <block for="{{$item.relation}}">
+                <div class="node-item-node">
+                  <text>{{map[$item].content}}</text>
+                </div>
+              </block>
+            </div>
+          </div>
+        </div>
+      </block>
+    </div>
+  </div>
+</template>
+<script>
+import fetch from '@system.fetch'
+
+export default {
+  protected: {
+    map: null,
+    current: -1,
+    clicked: false,
+    left: false,
+    paramCourseClass: '',
+    courseClass: null,
+    nodeList: [],
+
+  },
+  clickLeft(idx) {
+    if (!this.left) {
+      this.clicked = true
+    } else {
+      this.clicked = !((this.current == idx) && this.clicked)
+    }
+    this.current = idx
+    this.left = true
+    console.info(`left:` + idx + ` bool:` + this.left)
+  },
+  clickRight(idx) {
+    console.info(`right:` + idx)
+    if (this.left) {
+      this.clicked = true
+    } else {
+      this.clicked = !((this.current == idx) && this.clicked)
+    }
+    this.current = idx
+    this.left = false
+  },
+  onInit() {
+    console.info(`node class: ${this.paramCourseClass}`)
+    this.courseClass = JSON.parse(this.paramCourseClass)
+    this.getNode(this.courseClass.id)
+  },
+  getNode(classId) {
+    fetch.fetch({
+      url: 'http://localhost:8082/sw2020/node/query',
+      data: { 'classId': classId },
+      method: 'POST',
+      responseType: 'json'
+    }).then(res => {
+      const result = res.data
+
+      console.info(`the status code of the response: ${result.code}`)
+      console.info(`the data of the response: ${JSON.stringify(result.data)}`)
+      console.info(
+        `the headers of the response: ${JSON.stringify(result.headers)}`
+      )
+      this.map = result.data.result
+      console.info(`map:` + JSON.stringify(this.map))
+      this.nodeList = []
+      for (var k in this.map) {
+        console.info(`key名称是：` + k + `,key的值是：` + JSON.stringify(this.map[k]))
+        this.nodeList.push(this.map[k])
+      }
+    }).catch(error => {
+      console.info(`handling fail, errMsg = ${error.data}`)
+      console.info(`handling fail, errCode = ${error.code}`)
+    })
+  }
+}
+</script>
+<style lang="less">
+.node-page {
+  flex-direction: column;
+}
+.node-list {
+  flex-direction: column;
+}
+.node-item {
+  flex-direction: column;
+  background-color: #fff;
+  border: 1px solid #d0d0d0;
+  margin: 10px;
+  justify-content: space-around;
+
+  &-hd {
+    padding: 25px;
+    justify-content: space-around;
+  }
+
+  &-content {
+    font-size: 35px;
+    color: #000;
+    lines: 1;
+    text-overflow: ellipsis;
+  }
+
+  &-node {
+    flex-direction: column;
+    border: 1px solid #d0d0d0;
+    padding: 15px;
+    justify-content: center;
+    margin: 10px;
+    border-radius: 10px;
+    text {
+      color: #000;
+      text-align: center;
+    }
+  }
+
+  &-record {
+    flex-direction: row;
+    border: 1px solid #d0d0d0;
+    padding: 15px;
+    justify-content: flex-start;
+    margin: 10px;
+    border-radius: 10px;
+    text {
+      color: #000;
+      text-align: center;
+    }
+  }
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0; /*初始状态 透明度为0*/
+    }
+    50% {
+      opacity: 0; /*中间状态 透明度为0*/
+    }
+    100% {
+      opacity: 1; /*结尾状态 透明度为1*/
+    }
+  }
+  &-bd {
+    padding: 30px;
+    border-top: 1px solid#D0D0D0;
+    justify-content: space-around;
+    flex-direction: column;
+    animation-name: fadeIn;
+    animation-duration: 0.4s;
+    animation-fill-mode: forwards;
+    animation-timing-function: ease;
+  }
+}
+</style>
+
