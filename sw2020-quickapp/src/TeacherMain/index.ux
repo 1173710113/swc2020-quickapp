@@ -5,7 +5,7 @@
  
 <template>
   <div class="course_page">
-    
+
     <my-menu if="{{isShow}}" menu="{{menu}}"></my-menu>
 
     <comp-title show-back="true" show-text="true" show-plus="true" show-search="true" text="课程页" onevt-add="routeAddCourse" onevt-menu="showMenu"></comp-title>
@@ -37,8 +37,9 @@ export default {
   private: {
     list: [],
     title: 'Course',
-    isShow:false,
-    menu:false,
+    isShow: false,
+    menu: false,
+    overlay:'0'
   },
 
   routeAddCourse(evt) {
@@ -86,11 +87,12 @@ export default {
   loadMore() {
     console.info(`loadmore`)
   },
-  showMenu(){
+  showMenu() {
     console.info(`show menu`)
-    this.isShow= true
+    this.isShow = true
     this.menu = !this.menu
-  }
+    this.overlay = this.overlay == '0'? '1':'0' 
+  },
 }
 </script>
 

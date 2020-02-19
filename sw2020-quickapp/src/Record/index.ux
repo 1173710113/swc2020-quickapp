@@ -1,5 +1,6 @@
 <import name="my-title" src="../Title"></import>
 <import name="my-icon" src="../components/icon/index"></import>
+<import name="qui-mask" src="../../node_modules/qapp-ui/components/qui-mask/index"></import>
  
  
 <template>
@@ -7,7 +8,21 @@
 
     <my-title show-plus="false" show-search="false" text="录音"> </my-title>
 
-    <div class="content-block">
+    <qui-mask visible="{{visible}}" show-close="0" @qui-overlay-click="overlayClick">
+      <div class="dialog">
+        <text class="dialog-title">创建新课堂</text>
+        <div class="dialog-content">
+          <input type="text" placeholder="输入课堂名" value="{{className}}" onchange="bindClassName"></input>
+        </div>
+        <div class="dialog-btn">
+          <text onclick="clickDialogCancel">取消</text>
+          <text onclick="clickDialogConfirm">确定</text>
+        </div>
+
+      </div>
+    </qui-mask>
+
+    <div class="content-block" show="{{visible=='0'? true:false}}">
       <div class="image-block">
         <image class="mic" src="../pic/ic_mic_none_black_48dp.png"></image>
       </div>
@@ -38,9 +53,44 @@
   </div>
 </template>
 
-<style>
+<style lang="less">
+@import "../../style/color.less";
+
 .record-page {
   flex-direction: column;
+}
+.dialog {
+  background-color: white;
+  border: 1px solid @divider-color;
+  flex-direction: column;
+  border-radius: 5px;
+  &-title {
+    border-bottom: 1px solid @divider-color;
+    padding: 15px;
+    font-size: 40px;
+    font-weight: bold;
+    color: @primary-text;
+    text-align: center;
+  }
+  &-content {
+    border-bottom: 1px solid @divider-color;
+    padding: 15px;
+    flex-direction: column;
+    justify-content: center;
+    input {
+      font-size: 35px;
+      color: @secondary-text;
+    }
+  }
+  &-btn {
+    flex-direction: row;
+    justify-content: space-around;
+    text {
+      padding: 15px;
+      color: @primary-text;
+      font-size: 30px;
+    }
+  }
 }
 .time-block {
   flex-direction: row;
@@ -127,6 +177,9 @@
 
 <script>
 import record from '@system.record'
+import websocketfactory from '@system.websocketfactory'
+import fetch from '@system.fetch'
+import prompt from '@system.prompt'
 
 export default {
   protected: {
@@ -142,24 +195,34 @@ export default {
     ms: '00',
     isPlay: false,
     isStart: false,
+    ws: null,
+    courseClass: {},
+    visible: '0',
+    className: '',
   },
   onInit() {
     this.course = JSON.parse(this.paramCourse)
   },
+  onBackPress() {
+    console.info(`触发：onBackPress`)
+    this.ws.close()
+  },
   clickStart() {
     if (!this.isStart) {
-      this.isStart = true
-    }
-    if (!this.isPlay) {
-      this.isPlay = true
-      this.time = new Date().getTime()
-      this.start()
-      this.startRecord()
-      console.info(`start ${this.hour}:${this.min}:${this.s}:${this.ms}`)
+      this.visible = '1'
     } else {
-      this.isPlay = false
-      this.pause()
+      if (!this.isPlay) {
+        this.isPlay = true
+        this.time = new Date().getTime()
+        this.start()
+        this.startRecord()
+        console.info(`start ${this.hour}:${this.min}:${this.s}:${this.ms}`)
+      } else {
+        this.isPlay = false
+        this.pause()
+      }
     }
+
 
   },
   start() {
@@ -174,6 +237,11 @@ export default {
       this.min = min < 10 ? '0' + Math.floor(min) : Math.floor(min)
       this.hour = hour < 10 ? '0' + Math.floor(hour) : Math.floor(hour)
     }, 10)
+    setInterval(() => {
+      this.ws.send({
+        data: JSON.stringify({ 'state': this.isPlay, 'systemTime': new Date().getTime(), 'recordTime': this.interval, 'classId':this.courseClass.id})
+      })
+    }, 1000)
   },
   pause() {
     clearInterval(this.flag)
@@ -200,6 +268,51 @@ export default {
         console.info(`handling fail, code = ${code}`)
       }
     })
+  },
+  addClass() {
+    fetch
+      .fetch({
+        url: 'http://localhost:8082/sw2020/class/add',
+        responseType: 'json',
+        data: { 'className': this.className, 'courseId': this.course.id },
+        method: 'POST',
+      })
+      .then(res => {
+        const result = res.data
+        console.info(`the status code of the response: ${result.code}`)
+        console.info(`the data of the response: ${JSON.stringify(result.data)}`)
+        console.info(`the headers of the response: ${JSON.stringify(result.headers)}`)
+        if (result.data.flag) {
+          console.info(`添加成功:${JSON.stringify(result.data.result)}`)
+          this.courseClass = result.data.result
+          this.isStart = true
+          this.ws = websocketfactory.create({
+            url: 'ws://localhost:8082/sw2020/wsserver/teacher/01/16'
+          })
+          this.overlayClick()
+        } else {
+          prompt.showToast({
+            message: '添加失败:' + result.data.msg
+          })
+        }
+      })
+      .catch(error => {
+        console.info(`handling fail, errMsg = ${error.data}`)
+        console.info(`handling fail, errCode = ${error.code}`)
+      })
+  },
+  overlayClick() {
+    this.visible = '0'
+    console.info(`overlay`)
+  },
+  bindClassName(evt) {
+    this.className = evt.value
+  },
+  clickDialogCancel() {
+    this.overlayClick()
+  },
+  clickDialogConfirm() {
+    this.addClass()
   }
 }
 </script>

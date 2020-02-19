@@ -112,7 +112,7 @@ export default {
 
   routeAddCourse(evt) {
     router.push({
-      uri: '/EnrollCourse'
+      uri: '/ReceiveRecord'
     })
   },
 
@@ -121,7 +121,7 @@ export default {
       url: 'http://localhost:8082/sw2020/course/query/student',
       responseType: 'json',
       data: { 'id': '1173710113' },
-      method:'POST',
+      method: 'POST',
     }).then(res => {
       const result = res.data
 
@@ -141,9 +141,9 @@ export default {
     this.getCourse()
     console.info(`list:${this.list}`)
   },
-  routeNode(){
+  routeNode() {
     router.push({
-      uri:'/Node'
+      uri: '/Node'
     })
   }
 }

@@ -19,5 +19,8 @@
     "hap-toolkit": "*",
     "less": "^3.10.3",
     "less-loader": "^5.0.0"
+  },
+  "dependencies": {
+    "qapp-ui": "^1.2.0"
   }
 }

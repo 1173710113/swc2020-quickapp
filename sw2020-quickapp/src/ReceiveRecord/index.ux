@@ -1,0 +1,212 @@
+<import name="my-title" src="../Title"></import>
+<import name="my-menu" src="../Menu"></import>
+ 
+<template>
+  <div class="linear-layout">
+    <my-title onevt-menu="showMenu" show-plus="false"></my-title>
+    <my-menu if="{{isShow}}" menu="{{menu}}"></my-menu>
+
+    <div class="status">
+      <text style="font-size:100px">{{getState()}}</text>
+    </div>
+
+    <div class="button">
+      <div class="button-block">
+        <div class="button-item button-care" active="{{btnCareActive}}" onclick="activeCareBtn">
+          <text>!</text>
+        </div>
+      </div>
+      <div class="button-block">
+        <div class="button-doubt button-item" active="{{btnDoubtActive}}" onclick="activeDoubtBtn">
+          <text>?</text>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</template>
+
+<style lang="less">
+@import "../../style/color.less";
+
+@button-size: 250px;
+@button-text-size: 100px;
+
+.linear-layout {
+  flex-direction: column;
+}
+.button {
+  flex-direction: row;
+  position: fixed;
+  bottom: 50px;
+
+  text {
+    color: @text-icon;
+    font-size: @button-text-size;
+    font-weight: bold;
+  }
+
+  &-block {
+    width: 375px;
+    height: 375px;
+    justify-content: center;
+    align-content: center;
+  }
+
+  &-item {
+    width: @button-size;
+    height: @button-size;
+    border-radius: @button-size;
+    justify-content: center;
+
+    &:active {
+      animation-name: clickButton;
+      animation-duration: 300ms;
+      animation-fill-mode: forwards;
+      animation-timing-function: ease;
+    }
+  }
+
+  &-care {
+    background-color: @accent-color;
+  }
+  &-doubt {
+    background-color: @warn-color;
+  }
+}
+
+.status {
+  width: 100%;
+  height: 500px;
+  justify-content: center;
+}
+
+.time-block {
+  flex-direction: row;
+  justify-content: center;
+  padding: 15px;
+  text {
+    font-size: 100px;
+    font-weight: bold;
+    color: #000000;
+  }
+}
+
+@keyframes clickButton {
+  0% {
+    width: @button-size;
+    height: @button-size;
+    border-radius: @button-size;
+  }
+  50% {
+    width: @button-size+100px;
+    height: @button-size+100px;
+    border-radius: @button-size+100px;
+  }
+  100% {
+    width: @button-size;
+    height: @button-size;
+    border-radius: @button-size;
+  }
+}
+</style>
+
+<script>
+import websocketfactory from '@system.websocketfactory'
+import fetch from '@system.fetch'
+import prompt from '@system.prompt'
+
+let ws = null
+let message = {
+  'state': true,
+  'systemTime': 0,
+  'recordTime': 0
+}
+
+export default {
+  private: {
+    menu: false,
+    isShow: false,
+    btnCareActive: false,
+    btnDoubtActive: false,
+
+  },
+  onInit() {
+    this.startReceive()
+  },
+  showMenu() {
+    this.menu = !this.menu
+    this.isShow = true
+  },
+  activeCareBtn() {
+    this.btnCareActive = true
+    let messageTemp = message
+    let interval = new Date().getTime() - messageTemp.systemTime + messageTemp.recordTime
+    let mark = {
+      'id': null,
+      'time': interval,
+      'mark': 'care',
+      classId: messageTemp.classId,
+      userId: '1173710113'
+    }
+    this.addMark(mark)
+  },
+  activeDoubtBtn() {
+    this.btnDoubtActive = true
+    let messageTemp = message
+    let interval = new Date().getTime() - messageTemp.systemTime + messageTemp.recordTime
+    let mark = {
+      'id': null,
+      'time': interval,
+      'mark': 'doubt',
+      classId: messageTemp.classId,
+      userId: '1173710113'
+    }
+    this.addMark(mark)
+  },
+  startReceive() {
+    ws = websocketfactory.create({
+      url: 'ws://localhost:8082/sw2020/wsserver/student/1173710113/16'
+    })
+    ws.onmessage = function (data) {
+      message = JSON.parse(data.data)
+      console.info(`message is ${data.data}`)
+    }
+  },
+  getState() {
+    return message.state ? '进行中' : '暂停'
+  },
+  addMark(mark) {
+    fetch.fetch({
+      url: 'http://localhost:8082/sw2020/mark/add',
+      responseType: 'json',
+      data: JSON.stringify(mark),
+      header: { 'Content-Type': 'application/json;charset=utf-8' },
+      method: 'POST',
+    }).then(res => {
+      const result = res.data
+      console.info(`the status code of the response: ${result.code}`)
+      console.info(`the data of the response: ${JSON.stringify(result.data.result)}`)
+      console.info(
+        `the headers of the response: ${JSON.stringify(result.headers)}`
+      )
+      if (result.data.flag) {
+        console.info(`添加成功:${result.data.result}`)
+        prompt.showToast({
+          message: '添加成功'
+        })
+      } else {
+        prompt.showToast({
+          message: '添加失败:' + result.data.msg
+        })
+      }
+
+    }).catch(error => {
+      console.info(`handling fail, errMsg = ${error.data}`)
+      console.info(`handling fail, errCode = ${error.code}`)
+    })
+  }
+}
+</script>
+
+

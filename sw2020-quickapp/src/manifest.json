@@ -17,6 +17,9 @@
     },
     {
       "name":"system.fetch"
+    },
+    {
+      "name":"system.websocketfactory"
     }
   ],
   "permissions": [
@@ -64,6 +67,9 @@
         "component":"index"
       },
       "Register":{
+        "component":"index"
+      },
+      "ReceiveRecord":{
         "component":"index"
       }
     },
@@ -118,6 +124,9 @@
         "titleBar":false
       },
       "Register":{
+        "titleBar":false
+      },
+      "ReceiveRecord":{
         "titleBar":false
       }
     }

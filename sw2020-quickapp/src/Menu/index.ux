@@ -1,38 +1,40 @@
+
 <template>
     <div class="{{menu? 'menu':'menu-dispear'}}">
 
-        <div class="{{menu? 'content':'content-dispear'}}">
-            <div class="user">
-                <div class="user-image">
-                    <image src="../Common/Image/ic_launcher_round.png"></image>
-                </div>
+      <div class="{{menu? 'content':'content-dispear'}}">
+        <div class="user">
+          <div class="user-image">
+            <image src="../Common/Image/ic_launcher_round.png"></image>
+          </div>
 
-                <div class="user-name">
-                    <text>张三</text>
-                </div>
-                <div class="user-id">
-                    <text>1173710113<text>
-                </div>
-            </div>
+          <div class="user-name">
+            <text>张三</text>
+          </div>
+          <div class="user-id">
+            <text>1173710113<text>
+          </div>
+        </div>
 
-            <div class="function">
-                <div class="function-item">
-                    <text>用户</text>
-                </div>
-                <div class="function-item">
-                    <text>用户</text>
-                </div>
-                <div class="function-item">
-                    <text>用户</text>
-                </div>
-                <div class="function-item">
-                    <text>用户</text>
-                </div>
-
-            </div>
+        <div class="function">
+          <div class="function-item">
+            <text>用户</text>
+          </div>
+          <div class="function-item">
+            <text>用户</text>
+          </div>
+          <div class="function-item">
+            <text>用户</text>
+          </div>
+          <div class="function-item">
+            <text>用户</text>
+          </div>
 
         </div>
+
+      </div>
     </div>
+
 </template>
 
 <style lang="less">
@@ -53,7 +55,7 @@
 .user {
   flex-direction: column;
   background-color: #03a9f4;
-  padding:15px;
+  padding: 15px;
   &-image {
     justify-content: center;
     margin-top: 125px;
@@ -83,12 +85,12 @@
 .function {
   flex-direction: column;
   margin-top: 100px;
-  border-top: 1px solid #BDBDBD;
+  border-top: 1px solid #bdbdbd;
 
   &-item {
     padding: 15px;
     justify-content: center;
-    border-bottom: 1px solid #BDBDBD;
+    border-bottom: 1px solid #bdbdbd;
     text {
       color: #000000;
       font-size: 40px;
@@ -116,7 +118,7 @@
   0% {
     left: 0px;
     right: 750px;
-    background-color: #2196F3;
+    background-color: #2196f3;
   }
   100% {
     left: 0px;
@@ -132,7 +134,7 @@
   bottom: 0px;
   left: 0px;
   right: 750px;
-  background-color: #2196F3;
+  background-color: #2196f3;
   animation-name: closeMenu;
   animation-duration: 0.6s;
   animation-fill-mode: forwards;
@@ -144,12 +146,12 @@
     right: 200px;
     background-color: #ffffff;
   }
-  25%{
-      background-color: white;
+  25% {
+    background-color: white;
   }
   100% {
     right: 750px;
-    background-color: #2196F3;
+    background-color: #2196f3;
   }
 }
 
@@ -169,8 +171,8 @@
   0% {
     opacity: 1;
   }
-  25%{
-      opacity: 1;
+  25% {
+    opacity: 1;
   }
   100% {
     opacity: 0;
@@ -181,6 +183,7 @@
 <script>
 export default {
   props: ['menu'],
+  
 }
 </script>
 
